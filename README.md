@@ -8,7 +8,7 @@ Một trò chơi đơn giản, sử dụng công nghệ Eye-Tracking để đi�
 
 
 ## Nhật ký các bản cập nhật:
-### dev021325_1230
+### dev_021325_1229
 - Cập nhật trò chơi lần đầu tiên.
 - Đã bổ sung bộ đếm điểm và thời gian, cùng cơ chế xuất hiện ngẫu nhiên của ô vuông xanh và vật cản. Chúng sẽ tự biến mất sau một khoảng thời gian.
 - Vấn đề: Chưa điều khiển được ô vuông đỏ theo ý người chơi. Còn rất giật lag. Chưa tìm ra nguyên nhân.
