@@ -1,0 +1,181 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eye Tracking Game</title>
+    <script src="https://webgazer.cs.brown.edu/webgazer.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+        .game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        #player {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background-color: red;
+            border-radius: 5px;
+        }
+        .goal {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background-color: green;
+            border-radius: 10px;
+        }
+        .obstacle {
+            position: absolute;
+            width: 80px;
+            height: 30px;
+            background-color: black;
+        }
+        #message {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 20px;
+            font-weight: bold;
+        }
+        #scoreboard {
+            position: absolute;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <div id="player"></div>
+        <div id="message">Move your eyes to move the red square!</div>
+        <div id="scoreboard">Score: 0 | Time: 0s</div>
+    </div>
+
+    <script>
+        let playerSize = 50;
+        let score = 0;
+        let time = 0;
+        let gameOver = false;
+
+        function randomPosition(avoidRects = []) {
+            let maxAttempts = 50;
+            for (let i = 0; i < maxAttempts; i++) {
+                let x = Math.random() * (window.innerWidth - 80);
+                let y = Math.random() * (window.innerHeight - 80);
+                
+                let testRect = { left: x, top: y, right: x + 80, bottom: y + 80 };
+                let overlapping = avoidRects.some(rect => checkCollision(rect, testRect));
+                
+                if (!overlapping) return { x, y };
+            }
+            return { x: 50, y: 50 }; // Fallback safe position
+        }
+
+        function spawnGoal() {
+            let playerRect = document.getElementById("player").getBoundingClientRect();
+            let existingRects = [...document.querySelectorAll(".goal, .obstacle")].map(el => el.getBoundingClientRect());
+
+            let pos = randomPosition([playerRect, ...existingRects]);
+
+            let goal = document.createElement("div");
+            goal.classList.add("goal");
+            goal.style.left = pos.x + "px";
+            goal.style.top = pos.y + "px";
+            document.querySelector(".game-container").appendChild(goal);
+
+            setTimeout(() => goal.remove(), 5000); // Goal disappears after 5 seconds
+        }
+
+        function spawnObstacle() {
+            let playerRect = document.getElementById("player").getBoundingClientRect();
+            let existingRects = [...document.querySelectorAll(".goal, .obstacle")].map(el => el.getBoundingClientRect());
+
+            let pos = randomPosition([playerRect, ...existingRects]);
+
+            let obstacle = document.createElement("div");
+            obstacle.classList.add("obstacle");
+            obstacle.style.left = pos.x + "px";
+            obstacle.style.top = pos.y + "px";
+            document.querySelector(".game-container").appendChild(obstacle);
+
+            setTimeout(() => obstacle.remove(), 7000); // Obstacle disappears after 7 seconds
+        }
+
+        function updateTimer() {
+            if (gameOver) return;
+            time++;
+            playerSize += 2; // Increase player size over time
+            document.getElementById("player").style.width = playerSize + "px";
+            document.getElementById("player").style.height = playerSize + "px";
+            document.getElementById("scoreboard").innerText = `Score: ${score} | Time: ${time}s`;
+
+            if (time % 5 === 0) spawnGoal(); // Spawn green squares every 5 seconds
+            if (time % 7 === 0) spawnObstacle(); // Spawn black obstacles every 7 seconds
+        }
+
+        function checkCollision(rect1, rect2) {
+            return (
+                rect1.left < rect2.right &&
+                rect1.right > rect2.left &&
+                rect1.top < rect2.bottom &&
+                rect1.bottom > rect2.top
+            );
+        }
+
+        window.onload = function () {
+            webgazer.setGazeListener((data, elapsedTime) => {
+                if (gameOver || data == null) return;
+
+                let screenX = data.x * window.innerWidth / screen.width;
+                let screenY = data.y * window.innerHeight / screen.height;
+
+                let player = document.getElementById("player");
+                player.style.left = `${Math.max(0, Math.min(window.innerWidth - player.offsetWidth, screenX - player.offsetWidth / 2))}px`;
+                player.style.top = `${Math.max(0, Math.min(window.innerHeight - player.offsetHeight, screenY - player.offsetHeight / 2))}px`;
+
+                let playerRect = player.getBoundingClientRect();
+
+                // Check goal collision
+                document.querySelectorAll(".goal").forEach(goal => {
+                    let goalRect = goal.getBoundingClientRect();
+                    if (checkCollision(playerRect, goalRect)) {
+                        goal.remove();
+                        playerSize = Math.max(30, playerSize - 15); // Reduce size
+                        score += 10;
+                    }
+                });
+
+                // Check obstacle collision
+                document.querySelectorAll(".obstacle").forEach(obstacle => {
+                    let obstacleRect = obstacle.getBoundingClientRect();
+                    if (checkCollision(playerRect, obstacleRect)) {
+                        gameOver = true;
+                        document.getElementById("message").innerText = `Game Over! Final Score: ${score}`;
+                        webgazer.pause();
+                    }
+                });
+
+            }).begin();
+
+            webgazer.showPredictionPoints(true); // Show tracking dots for better calibration
+
+            setInterval(updateTimer, 1000);
+        };
+    </script>
+
+</body>
+</html>
