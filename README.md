@@ -1,5 +1,5 @@
-# EyetrackingGame
-Một trò chơi đơn giản, sử dụng công nghệ Eye-Tracking.
+# EyetrackingGame: "Move Your Eyes!"
+Một trò chơi đơn giản, sử dụng công nghệ Eye-Tracking để điều khiển vật thể.
 ## Luật chơi:
      - Trên màn hình sẽ xuất hiện một ô vuông đỏ lớn dần theo thời gian, một vài ô vuông xanh và các hình chữ nhật màu đen.
      - Nhiệm vụ của người chơi là sử dụng mắt điều khiển ô vuông đỏ chạm vào các ô vuông xanh. Mỗi khi chạm vào ô vuông xanh, ô vuông xanh sẽ biến mất và kích thước của ô vuông đỏ sẽ bị giảm đi.
